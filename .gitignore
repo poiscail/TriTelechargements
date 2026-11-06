@@ -1,2 +1,5 @@
 __pycache__/
 graphify-out/
+*.exe
+build/
+*.spec

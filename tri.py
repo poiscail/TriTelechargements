@@ -2,7 +2,11 @@
 import json, os, sys, time
 from pathlib import Path
 
-CONFIG = Path(__file__).with_name("regles.json")
+# En .exe : regles.json à côté de l'exe s'il existe, sinon la copie embarquée.
+ICI = Path(sys.executable if getattr(sys, "frozen", False) else __file__).parent
+CONFIG = ICI / "regles.json"
+if not CONFIG.exists():
+    CONFIG = Path(getattr(sys, "_MEIPASS", ICI)) / "regles.json"
 
 
 def charger():
@@ -63,7 +67,8 @@ if __name__ == "__main__":
     regles, _ = charger()
     chemin = sys.argv[1] if len(sys.argv) > 1 else os.path.expandvars(regles["dossier"])
     if not chemin or not Path(chemin).is_dir():
-        sys.exit("Indique le dossier à surveiller dans regles.json (\"dossier\").")
+        input("Indique le dossier à surveiller dans regles.json (\"dossier\"). Entrée pour fermer.")
+        sys.exit(1)
     try:
         surveiller(Path(chemin))
     except KeyboardInterrupt:
