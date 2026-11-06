@@ -4,7 +4,7 @@ Surveille le dossier Téléchargements et range chaque **nouveau** fichier dans 
 
 ## Utilisation
 
-1. Mettre le dossier à surveiller dans `regles.json` → `"dossier"` (ex. `"%USERPROFILE%\Downloads"`).
+1. Dossier surveillé : `regles.json` → `"dossier"` (par défaut `"%USERPROFILE%/Downloads"`).
 2. Double-cliquer sur `Lancer.bat`. Fermer la fenêtre (ou Ctrl+C) pour arrêter.
 
 Nécessite Python 3.
