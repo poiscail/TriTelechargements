@@ -24,8 +24,8 @@ def chemin_libre(cible: Path) -> Path:
     return cible
 
 
-def ranger(dossier: Path, fichier: Path, regles, ext_vers_dossier):
-    """Déplace un fichier ; renvoie la destination, ou None s'il faut l'ignorer / réessayer."""
+def categorie(fichier: Path, regles, ext_vers_dossier):
+    """Sous-dossier où ranger ce fichier, ou None s'il ne faut pas y toucher."""
     if not fichier.is_file() or fichier.name in regles["ignorer"]:
         return None
     ext = fichier.suffix.lower()
@@ -34,8 +34,22 @@ def ranger(dossier: Path, fichier: Path, regles, ext_vers_dossier):
     # Firefox crée "film.mp4" vide à côté de "film.mp4.part" : attendre la fin.
     if any(fichier.with_name(fichier.name + e).exists() for e in regles["en_cours"]):
         return None
+    return ext_vers_dossier[ext]
+
+
+def apercu(dossier: Path):
+    """Simulation : {fichier: catégorie} pour ce qui est déjà dans le dossier. Ne déplace rien."""
+    regles, ext_vers_dossier = charger()
+    return {p: c for p in dossier.iterdir() if (c := categorie(p, regles, ext_vers_dossier))}
+
+
+def ranger(dossier: Path, fichier: Path, regles, ext_vers_dossier):
+    """Déplace un fichier ; renvoie la destination, ou None s'il faut l'ignorer / réessayer."""
+    nom = categorie(fichier, regles, ext_vers_dossier)
+    if not nom:
+        return None
     try:
-        destination = dossier / ext_vers_dossier[ext]
+        destination = dossier / nom
         destination.mkdir(exist_ok=True)
         cible = chemin_libre(destination / fichier.name)
         os.rename(fichier, cible)  # échoue (sans rien perdre) si le fichier est encore ouvert ou existe déjà
@@ -86,8 +100,8 @@ def fenetre(dossier: Path):
     FOND, CARTE, TEXTE, GRIS, VERT, ROUGE = "#16181d", "#20232a", "#e6e8ec", "#8b919c", "#3ecf8e", "#ef5f5f"
     racine = tk.Tk()
     racine.title("Tri des téléchargements")
-    racine.geometry("560x420")
-    racine.minsize(420, 300)
+    racine.geometry("680x440")
+    racine.minsize(600, 300)
     racine.configure(bg=FOND)
     police = ("Segoe UI", 10)
 
@@ -106,6 +120,9 @@ def fenetre(dossier: Path):
     tk.Button(barre, text="Ouvrir le dossier", font=police, relief="flat", bd=0, padx=14, pady=6,
               bg=CARTE, fg=TEXTE, activebackground="#2b2f38", activeforeground=TEXTE, cursor="hand2",
               command=lambda: os.startfile(dossier)).pack(side="right", padx=8)
+    tk.Button(barre, text="Ranger l'existant…", font=police, relief="flat", bd=0, padx=14, pady=6,
+              bg=CARTE, fg=TEXTE, activebackground="#2b2f38", activeforeground=TEXTE, cursor="hand2",
+              command=lambda: ranger_existant()).pack(side="right")
 
     tk.Label(racine, text="Derniers fichiers rangés", bg=FOND, fg=GRIS, font=police).pack(anchor="w", padx=20, pady=(8, 4))
     liste = tk.Listbox(racine, bg=CARTE, fg=TEXTE, font=police, bd=0, highlightthickness=0, activestyle="none",
@@ -125,6 +142,23 @@ def fenetre(dossier: Path):
                          args=(dossier, 2.0, travail["arret"], lambda n, c: rangés.put((n, c)))).start()
         etat.config(text="●  Surveillance active", fg=VERT)
         bouton.config(text="Arrêter", bg=ROUGE, activebackground=ROUGE, command=arreter)
+
+    def ranger_existant():
+        # Simulation d'abord, puis confirmation : rien ne bouge sans accord.
+        from collections import Counter
+        from tkinter import messagebox
+        prevu = apercu(dossier)
+        if not prevu:
+            messagebox.showinfo("Ranger l'existant", "Rien à ranger.")
+            return
+        detail = "\n".join(f"  {n} → {c}" for c, n in Counter(prevu.values()).most_common())
+        if not messagebox.askyesno("Ranger l'existant", f"{len(prevu)} fichier(s) seront déplacés :\n\n{detail}\n\n"
+                                   "Rien n'est supprimé ni écrasé. Continuer ?"):
+            return
+        regles, ext_vers_dossier = charger()
+        for f in prevu:
+            if cible := ranger(dossier, f, regles, ext_vers_dossier):
+                rangés.put((f.name, cible.relative_to(dossier)))
 
     def arreter():
         travail["arret"].set()

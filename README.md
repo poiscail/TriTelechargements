@@ -5,7 +5,7 @@ Surveille le dossier Téléchargements et range chaque **nouveau** fichier dans 
 ## Utilisation
 
 1. Dossier surveillé : `regles.json` → `"dossier"` (par défaut `"%USERPROFILE%/Downloads"`).
-2. Double-cliquer sur `TriTelechargements.exe` (rien à installer ; [téléchargement](https://github.com/poiscail/TriTelechargements/releases/latest)). Une fenêtre sombre s'ouvre : bouton Démarrer/Arrêter, liste des derniers fichiers rangés (double-clic pour le montrer dans l'Explorateur), bouton pour ouvrir le dossier. Fermer la fenêtre pour quitter.
+2. Double-cliquer sur `TriTelechargements.exe` (rien à installer ; [téléchargement](https://github.com/poiscail/TriTelechargements/releases/latest)). Une fenêtre sombre s'ouvre : bouton Démarrer/Arrêter, liste des derniers fichiers rangés (double-clic pour le montrer dans l'Explorateur), bouton pour ouvrir le dossier, et « Ranger l'existant… » qui montre d'abord ce qui sera déplacé puis demande confirmation. Fermer la fenêtre pour quitter.
 
 Sans .exe : `Lancer.bat` (nécessite Python 3). Pour refaire l'exe :
 
@@ -26,7 +26,7 @@ L'exe utilise le `regles.json` placé à côté de lui, sinon les règles par d�
 ## Sécurité
 
 - Déplace seulement : rien n'est supprimé ni écrasé (doublon → `nom (1).ext`).
-- Les fichiers présents au lancement, les dossiers et les extensions inconnues ne sont pas touchés.
+- Les fichiers présents au lancement ne sont touchés que via « Ranger l'existant… », après confirmation. Les dossiers et les extensions inconnues ne sont jamais touchés.
 
 ## Test
 

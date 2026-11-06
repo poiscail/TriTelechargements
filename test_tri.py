@@ -43,4 +43,13 @@ with tempfile.TemporaryDirectory() as d:
     arret.set()
     t.join(1)
     assert not t.is_alive()
+
+# Simulation + rangement de l'existant : l'aperçu ne déplace rien.
+with tempfile.TemporaryDirectory() as d:
+    d = Path(d)
+    for n in ["a.pdf", "b.png", "c.xyz", "d.zip.crdownload"]:
+        (d / n).write_text("x")
+    prevu = tri.apercu(d)
+    assert {p.name: c for p, c in prevu.items()} == {"a.pdf": "Documents", "b.png": "Images"}
+    assert (d / "a.pdf").exists() and not (d / "Documents").exists()
 print("OK")
