@@ -50,9 +50,16 @@ with tempfile.TemporaryDirectory() as d:
 with tempfile.TemporaryDirectory() as d:
     d = Path(d)
     (d / "Projet").mkdir()
-    for n in ["a.pdf", "b.png", "c.xyz", "d.zip.crdownload"]:
+    for n in ["a.pdf", "b.png", "c.xyz", "d.zip.crdownload", "~$e.docx"]:
         (d / n).write_text("x")
     prevu = tri.apercu(d)
     assert {p.name: c for p, c in prevu.items()} == {"a.pdf": "Documents", "b.png": "Images"}
     assert (d / "a.pdf").exists() and not (d / "Documents").exists()
+
+# Doublon à double extension : "x.tar.gz" -> "x (1).tar.gz"
+with tempfile.TemporaryDirectory() as d:
+    (Path(d) / "x.tar.gz").write_text("x")
+    (Path(d) / "y.pdf").write_text("x")
+    assert tri.chemin_libre(Path(d) / "x.tar.gz").name == "x (1).tar.gz"
+    assert tri.chemin_libre(Path(d) / "y.pdf").name == "y (1).pdf"
 print("OK")

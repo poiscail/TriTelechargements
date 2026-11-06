@@ -17,16 +17,18 @@ def charger():
 
 def chemin_libre(cible: Path) -> Path:
     # Jamais écraser : "photo.jpg" -> "photo (1).jpg", "photo (2).jpg"...
-    base, n = cible, 1
+    ext = "".join(cible.suffixes[-2:]) if cible.suffixes[-2:-1] == [".tar"] else cible.suffix  # "x.tar.gz" -> "x (1).tar.gz"
+    base, n = cible.name[: len(cible.name) - len(ext)], 1
     while cible.exists():
-        cible = base.with_name(f"{base.stem} ({n}){base.suffix}")
+        cible = cible.with_name(f"{base} ({n}){ext}")
         n += 1
     return cible
 
 
 def categorie(fichier: Path, regles, ext_vers_dossier):
     """Sous-dossier où ranger ce fichier, ou None s'il ne faut pas y toucher."""
-    if not fichier.is_file() or fichier.name in regles["ignorer"]:
+    # "~$x.docx" : fichier de verrou d'Office, ".~lock" : LibreOffice
+    if not fichier.is_file() or fichier.name in regles["ignorer"] or fichier.name.startswith(("~$", ".~lock")):
         return None
     ext = fichier.suffix.lower()
     if ext in regles["en_cours"] or ext not in ext_vers_dossier:
@@ -138,8 +140,10 @@ def fenetre(dossier: Path):
 
     def demarrer():
         travail["arret"] = threading.Event()
-        threading.Thread(target=surveiller, daemon=True,
-                         args=(dossier, 2.0, travail["arret"], lambda n, c: rangés.put((n, c)))).start()
+        fil = threading.Thread(target=surveiller, daemon=True,
+                               args=(dossier, 2.0, travail["arret"], lambda n, c: rangés.put((n, c))))
+        fil.start()
+        travail["fil"] = fil
         etat.config(text="●  Surveillance active", fg=VERT)
         bouton.config(text="Arrêter", bg=ROUGE, activebackground=ROUGE, command=arreter)
 
@@ -166,6 +170,9 @@ def fenetre(dossier: Path):
         bouton.config(text="Démarrer", bg=VERT, activebackground=VERT, command=demarrer)
 
     def relever():
+        if not travail["fil"].is_alive() and not travail["arret"].is_set():  # le fil a planté : ne pas afficher "active"
+            arreter()
+            etat.config(text="●  Erreur : surveillance arrêtée", fg=ROUGE)
         while not rangés.empty():
             nom, cible = rangés.get()
             if not chemins:
@@ -195,7 +202,12 @@ def fenetre(dossier: Path):
 
 
 if __name__ == "__main__":
-    regles, _ = charger()
+    try:
+        regles, _ = charger()
+    except (OSError, ValueError, KeyError, AttributeError) as e:  # regles.json absent ou mal écrit : le dire au lieu de rien afficher
+        import tkinter.messagebox
+        tkinter.messagebox.showerror("Tri des téléchargements", f"regles.json illisible :\n{CONFIG}\n\n{e}")
+        sys.exit(1)
     chemin = Path(sys.argv[1] if len(sys.argv) > 1 else os.path.expandvars(regles["dossier"]))
     if not chemin.is_dir():
         import tkinter.messagebox
