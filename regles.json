@@ -1,5 +1,5 @@
 {
-  "dossier": "",
+  "dossier": "%USERPROFILE%/Downloads",
   "ignorer": ["Outils"],
   "en_cours": [".crdownload", ".part", ".tmp", ".download"],
   "categories": {
