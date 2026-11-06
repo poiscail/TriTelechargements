@@ -1,6 +1,6 @@
 {
   "dossier": "%USERPROFILE%/Downloads",
-  "ignorer": ["Outils"],
+  "ignorer": ["Projet", "Cours"],
   "en_cours": [".crdownload", ".part", ".tmp", ".download"],
   "categories": {
     "Images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".svg", ".heic", ".ico"],

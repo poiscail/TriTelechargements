@@ -20,7 +20,7 @@ L'exe utilise le `regles.json` placé à côté de lui, sinon les règles par d�
 
 
 - `categories` : nom du sous-dossier → liste d'extensions.
-- `ignorer` : noms jamais touchés (par défaut `Outils`).
+- `ignorer` : noms jamais touchés (par défaut `Projet` et `Cours` ; les dossiers ne sont de toute façon jamais déplacés).
 - `en_cours` : extensions des téléchargements en cours, ignorées (un fichier qui a encore son `.part`/`.crdownload` à côté attend aussi).
 
 ## Sécurité

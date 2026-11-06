@@ -6,7 +6,9 @@ import tri
 with tempfile.TemporaryDirectory() as d:
     d = Path(d)
     (d / "ancien.pdf").write_text("déjà là")
-    (d / "Outils").mkdir()
+    (d / "Projet").mkdir()
+    (d / "Cours").mkdir()
+    (d / "Cours" / "cours.pdf").write_text("x")
     (d / "Documents").mkdir()
     (d / "Documents" / "rapport.pdf").write_text("existant")
     (d / "Archives").write_text("fichier qui porte le nom d'une catégorie")
@@ -32,7 +34,7 @@ with tempfile.TemporaryDirectory() as d:
     assert (d / "musique.mp3").exists() and not (d / "Musique").exists()
     assert (d / "inconnu.xyz").exists() and (d / "copie.zip").exists()
     assert (d / "Installateurs" / "setup.exe").exists()
-    assert (d / "Outils").is_dir()
+    assert (d / "Projet").is_dir() and (d / "Cours" / "cours.pdf").exists()
     (d / "film.mp4.crdownload").rename(d / "film.mp4")  # fin des téléchargements
     (d / "musique.mp3").unlink()
     (d / "musique.mp3.part").rename(d / "musique.mp3")
@@ -47,6 +49,7 @@ with tempfile.TemporaryDirectory() as d:
 # Simulation + rangement de l'existant : l'aperçu ne déplace rien.
 with tempfile.TemporaryDirectory() as d:
     d = Path(d)
+    (d / "Projet").mkdir()
     for n in ["a.pdf", "b.png", "c.xyz", "d.zip.crdownload"]:
         (d / n).write_text("x")
     prevu = tri.apercu(d)
